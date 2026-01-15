@@ -9,7 +9,7 @@
     "client": "cd client && npm run dev",
     "electron": "wait-on http://localhost:5173 && cross-env NODE_ENV=development node scripts/run_electron.js",
     "install:all": "npm install && cd client && npm install && cd server && npm install",
-    "build": "cd client && npm install && npm run build"
+    "build": "cd client && npm install && npm run build && cd ../server && npm install"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
