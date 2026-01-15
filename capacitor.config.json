@@ -1,0 +1,6 @@
+{
+    "appId": "com.roger26.app",
+    "appName": "Roger26",
+    "webDir": "client/dist",
+    "bundledWebRuntime": false
+}
