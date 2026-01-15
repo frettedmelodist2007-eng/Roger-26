@@ -20,6 +20,9 @@
   "dependencies": {
     "@capacitor/android": "^8.0.1",
     "@capacitor/cli": "^8.0.1",
-    "@capacitor/core": "^8.0.1"
+    "@capacitor/core": "^8.0.1",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3"
   }
 }
