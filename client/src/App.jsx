@@ -3,22 +3,23 @@ import io from 'socket.io-client';
 import SoundManager from './SoundManager';
 import './index.css';
 
-const SERVER_URL = 'http://localhost:3001';
+// 1. GLOBAL CONNECTION (Connects once to your live server)
+const SOCKET_URL = "https://roger-26.onrender.com";
+const socket = io(SOCKET_URL);
 
 function App() {
-  const [socket, setSocket] = useState(null);
-
   // UI State
   const [view, setView] = useState('LANDING'); // LANDING, LOBBY
   const [roomCode, setRoomCode] = useState('');
   const [limit, setLimit] = useState(2);
-  const [status, setStatus] = useState('READY');
+  const [status, setStatus] = useState('CONNECTING...');
   const [isTx, setIsTx] = useState(false); // Transmitting?
   const [isRx, setIsRx] = useState(false); // Receiving?
 
   // WebRTC Refs
   const localStream = useRef(null);
   const peers = useRef({}); // { [id]: RTCPeerConnection }
+  const remoteAudioRef = useRef(null); // Reference to the hidden audio tag
 
   const handleClose = () => {
     if (window.require) {
@@ -27,42 +28,48 @@ function App() {
     }
   };
 
-  // 1. Initialize Socket
+  // 2. Initialize Socket Listeners
   useEffect(() => {
-    const s = io(SERVER_URL);
-    setSocket(s);
-
-    s.on('connect', () => {
-      console.log('Connected to server');
+    // Connection Status
+    socket.on('connect', () => {
+      console.log('Connected to server:', socket.id);
+      setStatus('READY');
     });
 
-    s.on('room_created', ({ roomCode }) => {
-      setRoomCode(roomCode);
-      setView('LOBBY');
-      setStatus('CHANNEL OPEN');
-      initAudio();
+    socket.on('disconnect', () => {
+      console.log('Disconnected');
+      setStatus('OFFLINE');
     });
 
-    s.on('room_joined', ({ roomCode }) => {
-      setRoomCode(roomCode);
-      setView('LOBBY');
-      setStatus('CHANNEL OPEN');
-      initAudio();
-    });
-
-    s.on('error', (msg) => {
+    socket.on('error', (msg) => {
       alert(msg);
       setStatus('ERROR');
     });
 
-    s.on('user_connected', ({ userId }) => {
+    // Room Logic
+    socket.on('room_created', ({ roomCode }) => {
+      setRoomCode(roomCode);
+      setView('LOBBY');
+      setStatus('CHANNEL OPEN');
+      initAudio();
+    });
+
+    socket.on('room_joined', ({ roomCode }) => {
+      setRoomCode(roomCode);
+      setView('LOBBY');
+      setStatus('CHANNEL OPEN');
+      initAudio();
+    });
+
+    // WebRTC Signaling
+    socket.on('user_connected', ({ userId }) => {
       console.log('User joined:', userId);
       setStatus('USER JOINED');
       // Initiator (existing user) calls the new user
-      createPeer(userId, s, true);
+      createPeer(userId, socket, true);
     });
 
-    s.on('user_disconnected', ({ userId }) => {
+    socket.on('user_disconnected', ({ userId }) => {
       console.log('User left:', userId);
       if (peers.current[userId]) {
         peers.current[userId].close();
@@ -70,30 +77,38 @@ function App() {
       }
     });
 
-    // WebRTC Signals
-    s.on('offer', handleOffer);
-    s.on('answer', handleAnswer);
-    s.on('ice-candidate', handleCandidate);
+    socket.on('offer', handleOffer);
+    socket.on('answer', handleAnswer);
+    socket.on('ice-candidate', handleCandidate);
 
-    return () => s.disconnect();
+    // Cleanup on unmount
+    return () => {
+      socket.off('connect');
+      socket.off('room_created');
+      socket.off('room_joined');
+      socket.off('user_connected');
+      socket.off('offer');
+      socket.off('answer');
+      socket.off('ice-candidate');
+    };
   }, []);
 
-  // 2. Audio Setup
+  // 3. Audio Setup
   const initAudio = async () => {
     try {
-      // 1. Clean up potential old streams first
+      // Clean up old streams
       if (localStream.current) {
         localStream.current.getTracks().forEach(track => track.stop());
         localStream.current = null;
       }
 
-      // 2. Request new stream
+      // Request new stream
       console.log("Requesting mic access...");
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       localStream.current = stream;
-      setStatus("READY"); // Clear previous error
+      setStatus("READY");
 
-      // Mute initially (PTT logic)
+      // Mute mic initially (PTT logic - only unmute when button pressed)
       stream.getAudioTracks().forEach(track => track.enabled = false);
 
     } catch (e) {
@@ -111,20 +126,20 @@ function App() {
     }
   };
 
-  // 3. Peer Connection Logic
+  // 4. Peer Connection Logic
   const createPeer = (targetId, socketInstance, isInitiator) => {
     const peer = new RTCPeerConnection({
       iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
     });
 
-    // Add local tracks
+    // Add local tracks to the connection
     if (localStream.current) {
       localStream.current.getTracks().forEach(track => {
         peer.addTrack(track, localStream.current);
       });
     }
 
-    // Handle ICE
+    // Handle ICE Candidates
     peer.onicecandidate = (e) => {
       if (e.candidate) {
         socketInstance.emit('ice-candidate', {
@@ -135,18 +150,18 @@ function App() {
       }
     };
 
-    // Handle Remote Stream (Play Audio)
+    // Handle Incoming Audio Stream
     peer.ontrack = (e) => {
-      audio.srcObject = e.streams[0];
-      audio.autoplay = true;
+      console.log("Receiving remote audio track");
 
-      // Detect audio activity roughly (or just trust the stream existence for RX light)
+      // Play the audio through the hidden <audio> tag
+      if (remoteAudioRef.current) {
+        remoteAudioRef.current.srcObject = e.streams[0];
+        remoteAudioRef.current.play().catch(e => console.error("Auto-play blocked:", e));
+      }
+
       setIsRx(true);
-      SoundManager.playStatic(0.1); // Initial squelch open
-
-      // Simple activity monitor (optional, for now just toggle RX on track)
-      // For true voice activity detection (VAD), we'd need AudioContext analysis.
-      // Here we simulate "RX ON" while track is active.
+      SoundManager.playStatic(0.1);
 
       e.track.onended = () => {
         setIsRx(false);
@@ -199,7 +214,7 @@ function App() {
     }
   };
 
-  // 4. PTT Handlers
+  // 5. PTT Handlers
   const startTx = () => {
     if (localStream.current) {
       localStream.current.getAudioTracks().forEach(t => t.enabled = true);
@@ -218,7 +233,7 @@ function App() {
     }
   };
 
-  // 5. Actions
+  // 6. Actions
   const handleCreate = () => socket.emit('create_room', { limit });
   const handleJoin = () => socket.emit('join_room', { roomCode });
 
@@ -228,10 +243,10 @@ function App() {
       <div className="antenna"></div>
       <div className="grip left"></div>
       <div className="grip right"></div>
-
       <div className="speaker"></div>
 
-
+      {/* Hidden Audio Element for Incoming Sound */}
+      <audio ref={remoteAudioRef} autoPlay playsInline style={{ display: 'none' }} />
 
       <div className={`led-indicator ${isTx ? 'tx' : isRx ? 'rx' : ''}`}></div>
 
@@ -275,12 +290,12 @@ function App() {
               onMouseUp={stopTx}
               onTouchStart={startTx}
               onTouchEnd={stopTx}
-              disabled={status === 'MIC DENIED' || status === 'MIC ERROR' || status === 'NO MIC FOUND'}
+              disabled={status.includes('DENIED') || status.includes('ERROR') || status.includes('NO MIC')}
             >
               {isTx ? 'TALK' : 'PUSH'}
             </button>
 
-            {(status === 'MIC DENIED' || status === 'MIC ERROR') && (
+            {(status.includes('DENIED') || status.includes('ERROR')) && (
               <button className="btn"
                 style={{ marginTop: 10, fontSize: '0.7rem', background: '#C0392B' }}
                 onClick={initAudio}>
