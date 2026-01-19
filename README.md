@@ -4,6 +4,11 @@ A real-time **network-based walkie-talkie (Push-to-Talk)** Android application t
 The app does **not** rely on Bluetooth or Wi-Fi Direct and works globally using mobile data or Wi-Fi.
 
 ---
+Android apk
+https://github.com/frettedmelodist2007-eng/Roger-26/releases/download/app/app-debug.apk
+
+Webapp link:
+https://roger-26.onrender.com/
 
 ## 🚀 Features
 
