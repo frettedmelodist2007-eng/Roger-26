@@ -1,4 +1,4 @@
-# 📡 Network Walkie-Talkie Android App
+# Network Walkie-Talkie Android App
 
 A real-time **network-based walkie-talkie (Push-to-Talk)** Android application that allows users to communicate using a **5-digit room code** over the internet.
 The app does **not** rely on Bluetooth or Wi-Fi Direct and works globally using mobile data or Wi-Fi.
@@ -10,40 +10,40 @@ https://github.com/frettedmelodist2007-eng/Roger-26/releases/download/app/app-de
 Webapp link:
 https://roger-26.onrender.com/
 
-## 🚀 Features
+##  Features
 
-* 🔢 **5-Digit Room Code System**
+*  **5-Digit Room Code System**
 
   * One user creates a room and gets a unique code
   * Other users join by entering the same code
 
-* 🎙️ **Push-to-Talk Voice Communication**
+*  **Push-to-Talk Voice Communication**
 
   * Real-time audio streaming
   * Low-latency voice transmission
 
-* 👑 **Admin Controls**
+*  **Admin Controls**
 
   * Set maximum user limit per room
   * Manage participants
 
-* 🌐 **Internet-Based Communication**
+* **Internet-Based Communication**
 
   * Works anywhere using network connection
   * No proximity or hardware limitations
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
-### 📱 Android App
+###  Android App
 
 * **Language:** Kotlin
 * **IDE:** Android Studio
 * **Audio:** WebRTC
 * **Networking:** Socket.IO
 
-### 🖥️ Backend Server
+### Backend Server
 
 * **Runtime:** Node.js
 * **Framework:** Express.js
@@ -52,7 +52,7 @@ https://roger-26.onrender.com/
 
 ---
 
-## 🧠 Architecture Overview
+##  Architecture Overview
 
 ```
 Android Client (Admin)
@@ -70,7 +70,7 @@ Audio streams are exchanged using **WebRTC**, while room creation and signaling 
 
 ---
 
-## 📦 Project Structure
+##  Project Structure
 
 ```
 walkie-talkie-app/
@@ -90,7 +90,7 @@ walkie-talkie-app/
 
 ---
 
-## 🔑 Permissions Used
+##  Permissions Used
 
 ```xml
 <uses-permission android:name="android.permission.INTERNET"/>
@@ -100,9 +100,9 @@ walkie-talkie-app/
 
 ---
 
-## ⚙️ Setup Instructions
+## Setup Instructions
 
-### 1️⃣ Backend Server Setup
+### Backend Server Setup
 
 ```bash
 cd server
@@ -118,7 +118,7 @@ http://localhost:3000
 
 ---
 
-### 2️⃣ Android App Setup
+###  Android App Setup
 
 1. Open **Android Studio**
 2. Import the `android-app` folder
@@ -127,7 +127,7 @@ http://localhost:3000
 
 ---
 
-## 🧪 How It Works
+## How It Works
 
 1. Admin creates a room → receives a **5-digit code**
 2. Users enter the code to join
@@ -137,7 +137,7 @@ http://localhost:3000
 
 ---
 
-## 📌 Use Cases
+##  Use Cases
 
 * Team communication
 * Event coordination
@@ -147,7 +147,7 @@ http://localhost:3000
 
 ---
 
-## ⚠️ Limitations (Current)
+##  Limitations (Current)
 
 * No encryption (to be added)
 * No voice recording storage
@@ -155,17 +155,17 @@ http://localhost:3000
 
 ---
 
-## 🔮 Future Enhancements
+##  Future Enhancements
 
-* 🔐 End-to-end encryption
-* 📱 Modern UI with Jetpack Compose
-* 🌍 Firebase-based room persistence
-* 📴 Network quality handling
-* 🧑‍🤝‍🧑 User roles & moderation
+*  End-to-end encryption
+*  Modern UI with Jetpack Compose
+*  Firebase-based room persistence
+*  Network quality handling
+*  User roles & moderation
 
 ---
 
-## 📚 Learning Outcomes
+##  Learning Outcomes
 
 * Android audio handling
 * WebRTC integration
@@ -175,23 +175,13 @@ http://localhost:3000
 
 ---
 
-## 👤 Author
+##  Author
 
 **Ayush**
 B.Tech Student | Android Developer | Tech Enthusiast
 
-📸 Instagram: [@fretted_melodist](https://instagram.com/fretted_melodist)
+ Instagram: [@fretted_melodist](https://instagram.com/fretted_melodist)
 
----
 
-## ⭐ Support
-
-If you find this project helpful:
-
-* Star ⭐ the repository
-* Fork 🍴 it
-* Share feedback 💬
-
----
 
 > *This project is built for educational and learning purposes.*
